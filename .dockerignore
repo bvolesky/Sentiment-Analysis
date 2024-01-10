@@ -1,0 +1,7 @@
+*
+!/logging
+!/models
+!/static
+!/templates
+!/docker_requirements.txt
+!/app.py

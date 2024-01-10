@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>Sentiment Analysis</title>
+      <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+      <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+      <style>
+         h1 {
+         font-size: 50px;
+         }
+         body {
+         font-family: 'Roboto', sans-serif;
+         background-color: #f4f4f4;
+         color: #333;
+         margin: 0;
+         padding: 0;
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         height: 100vh;
+         }
+         .container {
+         width: 60%;
+         max-width: 650px;
+         margin: auto;
+         text-align: center;
+         padding: 20px;
+         box-sizing: border-box;
+         background-color: #fff;
+         border-radius: 10px;
+         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+         }
+         .review-input, .submit-btn, .result, .review-display {
+         margin: 10px 0; /* This gives consistent vertical spacing */
+         padding: 10px;
+         box-sizing: border-box;
+         }
+         .review-input {
+         width: 100%;
+         min-height: 100px;
+         max-height: 400px;
+         height: 150px;
+         font-size: 18px;
+         border: 1px solid #ccc;
+         border-radius: 5px;
+         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+         resize: vertical;
+         }
+         .submit-btn {
+         width: 100%;
+         background-color: #28a745;
+         color: white;
+         padding: 15px 20px;
+         border: none;
+         border-radius: 5px;
+         cursor: pointer;
+         font-size: 20px;
+         margin-top: 10px;
+         transition: background-color 0.3s;
+         }
+         .submit-btn:hover {
+         background-color: #218838;
+         }
+         .submit-btn:disabled {
+         background-color: #ccc;
+         cursor: not-allowed;
+         }
+         .result, .review-display {
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         text-align: center;
+         width: 100%;
+         border-radius: 5px;
+         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+         margin-top: 20px;
+         }
+         .result {
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         text-align: center;
+         width: 100%;
+         border-radius: 5px;
+         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+         margin-top: 20px;
+         background-color: #dff0d8;
+         color: #3c763d;
+         }
+         .review-display {
+         background-color: #fff;
+         color: #3c763d;
+         word-wrap: break-word;
+         }
+         .negative-sentiment {
+         background-color: #f2dede;
+         color: #a94442;
+         }
+         footer {
+         position: fixed;
+         right: 10px;
+         bottom: 10px;
+         color: grey;
+         font-size: 12px;
+         }
+         @media (max-width: 768px) {
+         .container {
+         width: 80%;
+         }
+         }
+         #loadingAnimation {
+         display: none; /* Hidden by default */
+         justify-content: center;
+         align-items: center;
+         position: absolute;
+         width: 100%;
+         height: 100%;
+         top: 0;
+         left: 0;
+         background: rgba(255, 255, 255, 0.7);
+         }
+      </style>
+   </head>
+   <body>
+      <div class="container">
+         <h1>Sentiment Analysis</h1>
+         <h3>Predict if your product review is good or bad</h3>
+         <form id="analysisForm" method="POST">
+            <textarea id="reviewInput" class="review-input" name="review" placeholder="Ex. The product arrived on time and was really durable..."></textarea>
+            <br>
+            <input type="submit" class="submit-btn" value="Analyze">
+            <div id="loadingAnimation">
+               <img src="{{ url_for('static', filename='loading.gif') }}" alt="Loading...">
+            </div>
+         </form>
+         {% if sentiment %}
+         <div class="result" id="resultContainer">
+            <div>
+               <strong>The model determined your review to be {{ sentiment }}:&nbsp;</strong>
+               <p>{{ review }}</p>
+            </div>
+         </div>
+         {% endif %}
+      </div>
+      <footer>
+         Designed by Brandon Volesky
+      </footer>
+      <script>
+         window.onload = function() {
+
+             var reviewInput = document.getElementById('reviewInput');
+             var submitButton = document.querySelector('.submit-btn');
+
+             // Function to check the textarea content and update the button state
+             function updateButtonState() {
+                 if (reviewInput.value.trim() === '') {
+                     submitButton.disabled = true;
+                     submitButton.style.backgroundColor = '#ccc';
+                 } else {
+                     submitButton.disabled = false;
+                     submitButton.style.backgroundColor = '#28a745';
+                 }
+             }
+
+         // Bind the function to the input event of the textarea
+         reviewInput.addEventListener('input', updateButtonState);
+
+         // Initialize the button state on page load
+         updateButtonState();
+
+             var sentiment = "{{ sentiment }}";
+             var resultContainer = document.getElementById('resultContainer');
+
+             if (sentiment.toLowerCase().includes('negative')) {
+                 resultContainer.classList.add('negative-sentiment');
+             }
+
+             // Handling Enter and Shift+Enter key events in textarea
+             document.getElementById('reviewInput').addEventListener('keypress', function(event) {
+                 if (event.key === 'Enter' && !event.shiftKey) {
+                     event.preventDefault(); // Prevent default Enter behavior
+                     document.getElementById('loadingAnimation').style.display = 'flex';
+                     document.getElementById('analysisForm').submit(); // Submit the form
+                 }
+             });
+
+             // Handling form submission
+             document.getElementById('analysisForm').addEventListener('submit', function(event) {
+                 document.getElementById('loadingAnimation').style.display = 'flex'; // Show loading animation
+             });
+
+             // Focus on the text area after form submission
+             document.getElementById('analysisForm').addEventListener('submit', function() {
+                 setTimeout(function() {
+                     document.getElementById('reviewInput').focus();
+                 }, 0);
+             });
+
+             // Automatically focus the text area when the page loads
+             document.getElementById('reviewInput').focus();
+         };
+      </script>
+   </body>
+</html>

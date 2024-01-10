@@ -1,0 +1,1 @@
+docker build -t sentiment . && start http://localhost:5000/ && docker run --rm -it -p 5000:5000 sentiment && docker rmi sentiment

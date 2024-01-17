@@ -1,4 +1,4 @@
-# Logistic Regression Sentiment Analysis 🚀
+# Logistic Regression Sentiment Analysis
 
 ![Good](/assets/images/good.png)
 
